@@ -1,0 +1,8 @@
+Acesta este un exemplu la python.
+Vom calcula bytes, 
+
+cuvinte, caractere
+
+newlines si 12 4423 5124 213 414 !!! .. ?? %% 23! 
+
+si max line length
