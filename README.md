@@ -1,1 +1,1 @@
-# wc_python
+# wc tool in Python
