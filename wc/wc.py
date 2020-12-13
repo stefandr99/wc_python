@@ -1,6 +1,7 @@
 import sys
-import os
+import codecs
 import re
+import os
 
 def file_management(file, mode):
     try:
@@ -46,7 +47,7 @@ def wc_help():
 
 
 def wc_version():
-    print("wc (GNU coreutils) 1.20\nCopyright (C) 2020 Stefan Dragoi, Inc.\n\nWritten by Stefan Dragoi")
+    print("wc (GNU coreutils) 1.21\nCopyright (C) 2020 Stefan Dragoi, Inc.\n\nWritten by Stefan Dragoi")
 
 
 def match_wc(cmd):
@@ -54,48 +55,67 @@ def match_wc(cmd):
     return regex.match(cmd)
 
 
+def extract_text_from_bytes(bytes_content):
+    string = ""
+    for b in bytes_content:
+        string += chr(b)
+    return string
+
+
 def wc():
     arguments = sys.argv
     cmd = ' '.join(sys.argv[1:])
-    try:
-        if(not match_wc(cmd)):
+    if(not match_wc(cmd)):
+        try:
             raise Exception("wc: invalid option -- '" + arguments[2][1:] + "'\nTry 'wc --help' fro more information")
-    except Exception as e:
-        print(e)
+        except Exception as e:
+            print(e)
+    elif(os.path.isdir(arguments[3])):
+        try:
+            raise Exception("wc: " + arguments[3] + ": Is a directory\n0 wc")
+        except Exception as e:
+            print(e)
     else:
-        if(arguments[2] == '-c' or arguments[2] == '--bytes'):
-            try:
-                f, content = file_management(arguments[3], "rb")
-                wc_c(content, arguments[3])
-                f.close()
-            except:
-                pass
-        else:
-            try:
-                if(arguments[2] == '--help'):
-                    wc_help()
-                elif(arguments[2] == '--version'):
-                    wc_version()
-                elif(arguments[2][:14] == '--files0-from='):
-                    file0 = arguments[2][14:]
-                    f1, content1 = file_management(file0, "r")
-                    f2, content2 = file_management(content1, "r")
-                    wc_lwm(content2, content1)
-                    f1.close()
-                    f2.close()
-                else:
-                    f, content = file_management(arguments[3], "r")
-                    if(arguments[2] == '-m' or arguments[2] == '--chars'):
-                        wc_m(content, arguments[3])
-                    elif(arguments[2] == '-l' or arguments[2] == '--lines'):
-                        wc_l(content, arguments[3])
-                    elif(arguments[2] == '-L' or arguments[2] == '--max-line-length'):
-                        wc_L(content, arguments[3])
-                    elif(arguments[2] == '-w' or arguments[2] == '--words'):
-                        wc_w(content, arguments[3])
+        try:
+            if(arguments[2] == '--help'):
+                wc_help()
+            elif(arguments[2] == '--version'):
+                wc_version()
+            elif(arguments[2][:14] == '--files0-from='):
+                file0 = arguments[2][14:]
+                f1, content1 = file_management(file0, "r")
+                f2, content2 = file_management(content1, "r")
+                wc_lwm(content2, content1)
+                f1.close()
+                f2.close()
+            elif(arguments[2] == '-c' or arguments[2] == '--bytes'):
+                try:
+                    f, content = file_management(arguments[3], "rb")
+                    wc_c(content, arguments[3])
                     f.close()
-            except:
-                pass
+                except:
+                    pass
+            else:
+                if(arguments[3][-3:] != 'txt'):
+                    f, content = file_management(arguments[3], "rb")
+                    try:
+                        #content = extract_text_from_bytes(content)
+                        content = codecs.decode(content, "utf-8", "ignore")
+                    except Exception as e:
+                        print(e)
+                else:
+                    f, content = file_management(arguments[3], "rt")
+                if(arguments[2] == '-m' or arguments[2] == '--chars'):
+                    wc_m(content, arguments[3])
+                elif(arguments[2] == '-l' or arguments[2] == '--lines'):
+                    wc_l(content, arguments[3])
+                elif(arguments[2] == '-L' or arguments[2] == '--max-line-length'):
+                    wc_L(content, arguments[3])
+                elif(arguments[2] == '-w' or arguments[2] == '--words'):
+                    wc_w(content, arguments[3])
+                f.close()
+        except:
+            pass
     
 
 if __name__ == "__main__":
