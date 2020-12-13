@@ -47,19 +47,12 @@ def wc_help():
 
 
 def wc_version():
-    print("wc (GNU coreutils) 1.22\nCopyright (C) 2020 Stefan Dragoi, Inc.\n\nWritten by Stefan Dragoi")
+    print("wc (GNU coreutils) 1.23\nCopyright (C) 2020 Stefan Dragoi, Inc.\n\nWritten by Stefan Dragoi")
 
 
 def match_wc(cmd):
-    regex = re.compile("wc\s(((-c|--bytes|-m|--chars|-l|--lines|-L|-w|--words)\s.)|--files0-from=\w|--help|--version)")
+    regex = re.compile("wc\s(((-c|--bytes|-m|--chars|-l|--lines|-L|--max-line-length|-w|--words)\s.)|--files0-from=\w|--help|--version)")
     return regex.match(cmd)
-
-
-def extract_text_from_bytes(bytes_content):
-    string = ""
-    for b in bytes_content:
-        string += chr(b)
-    return string
 
 
 def wc():
@@ -67,12 +60,7 @@ def wc():
     cmd = ' '.join(sys.argv[1:])
     if(not match_wc(cmd)):
         try:
-            raise Exception("wc: invalid option -- '" + arguments[2][1:] + "'\nTry 'wc --help' fro more information")
-        except Exception as e:
-            print(e)
-    elif(os.path.isdir(arguments[3])):
-        try:
-            raise Exception("wc: " + arguments[3] + ": Is a directory\n0 wc")
+            raise Exception("wc: invalid option -- '" + arguments[2][1:] + "'\nTry 'wc --help' for more information")
         except Exception as e:
             print(e)
     else:
@@ -83,11 +71,29 @@ def wc():
                 wc_version()
             elif(arguments[2][:14] == '--files0-from='):
                 file0 = arguments[2][14:]
-                f1, content1 = file_management(file0, "r")
-                f2, content2 = file_management(content1, "r")
-                wc_lwm(content2, content1)
-                f1.close()
-                f2.close()
+                if(os.path.isdir(file0)):
+                    try:
+                        raise Exception("wc: " + file0 + ": read error: Is a directory")
+                    except Exception as e:
+                        print(e)
+                else:
+                    f1, content1 = file_management(file0, "r")
+                    if(content1[-3:] != 'txt'):
+                        f2, content2 = file_management(content1, "rb")
+                        try:
+                            content2 = codecs.decode(content2, "utf-8", "ignore")
+                        except Exception as e:
+                            print(e)
+                    else: 
+                        f2, content2 = file_management(content1, "r")
+                    wc_lwm(content2, content1)
+                    f1.close()
+                    f2.close()
+            elif(os.path.isdir(arguments[3])):
+                try:
+                    raise Exception("wc: " + arguments[3] + ": Is a directory\n0 wc")
+                except Exception as e:
+                    print(e)
             elif(arguments[2] == '-c' or arguments[2] == '--bytes'):
                 try:
                     f, content = file_management(arguments[3], "rb")
@@ -99,7 +105,6 @@ def wc():
                 if(arguments[3][-3:] != 'txt'):
                     f, content = file_management(arguments[3], "rb")
                     try:
-                        #content = extract_text_from_bytes(content)
                         content = codecs.decode(content, "utf-8", "ignore")
                     except Exception as e:
                         print(e)
