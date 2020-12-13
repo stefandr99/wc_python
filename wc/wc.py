@@ -47,11 +47,11 @@ def wc_help():
 
 
 def wc_version():
-    print("wc (GNU coreutils) 1.21\nCopyright (C) 2020 Stefan Dragoi, Inc.\n\nWritten by Stefan Dragoi")
+    print("wc (GNU coreutils) 1.22\nCopyright (C) 2020 Stefan Dragoi, Inc.\n\nWritten by Stefan Dragoi")
 
 
 def match_wc(cmd):
-    regex = re.compile("wc\s(((-c|--bytes|-m|--chars|-l|--lines|-L|-w|--words)\s\w)|--files0-from=\w|--help|--version)")
+    regex = re.compile("wc\s(((-c|--bytes|-m|--chars|-l|--lines|-L|-w|--words)\s.)|--files0-from=\w|--help|--version)")
     return regex.match(cmd)
 
 
